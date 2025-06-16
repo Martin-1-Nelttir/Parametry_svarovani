@@ -1,0 +1,93 @@
+import React, { useState } from 'react'
+
+const WeldingCalculator = () => {
+  const [jointType, setJointType] = useState('koutový')
+  const [thickness, setThickness] = useState(5)
+  const [wireDiameter, setWireDiameter] = useState(1.0)
+  const [mode, setMode] = useState('svarovani') // nebo 'podavani'
+  const [inputValue, setInputValue] = useState(300)
+  const [result, setResult] = useState(null)
+
+  const calculate = () => {
+    const t = parseFloat(thickness)
+    const d = parseFloat(wireDiameter)
+    const v = parseFloat(inputValue)
+
+    // Výpočet plochy svarového kovu podle typu spoje
+    let A = 0
+    if (jointType === 'koutový') {
+      A = (t * t) / 2 // mm²
+    } else {
+      A = t * t // zjednodušený model
+    }
+
+    const wireArea = Math.PI * Math.pow(d / 2, 2) // mm²
+
+    let output = 0
+    if (mode === 'svarovani') {
+      // Vstup je rychlost svařování → výpočet rychlosti podávání
+      const Q = A * v // objem kovu v mm³/min
+      output = Q / wireArea / 1000 // m/min
+      setResult(`Rychlost podávání drátu: ${output.toFixed(2)} m/min`)
+    } else {
+      // Vstup je rychlost podávání drátu → výpočet rychlosti svařování
+      const Q = v * 1000 * wireArea // mm³/min
+      output = Q / A // mm/min
+      setResult(`Rychlost svařování: ${output.toFixed(0)} mm/min`)
+    }
+  }
+
+  return (
+    <div style={{ maxWidth: '500px' }}>
+      <label>Typ spoje:</label><br />
+      <select value={jointType} onChange={e => setJointType(e.target.value)}>
+        <option value="koutový">Koutový</option>
+        <option value="tupý">Tupý</option>
+      </select>
+
+      <br /><br />
+
+      <label>Tloušťka materiálu (mm):</label><br />
+      <input
+        type="number"
+        value={thickness}
+        onChange={e => setThickness(e.target.value)}
+      />
+
+      <br /><br />
+
+      <label>Průměr drátu (mm):</label><br />
+      <input
+        type="number"
+        step="0.1"
+        value={wireDiameter}
+        onChange={e => setWireDiameter(e.target.value)}
+      />
+
+      <br /><br />
+
+      <label>Režim výpočtu:</label><br />
+      <select value={mode} onChange={e => setMode(e.target.value)}>
+        <option value="svarovani">Zadání rychlosti svařování (mm/min)</option>
+        <option value="podavani">Zadání rychlosti podávání drátu (m/min)</option>
+      </select>
+
+      <br /><br />
+
+      <label>{mode === 'svarovani' ? 'Rychlost svařování (mm/min):' : 'Rychlost podávání drátu (m/min):'}</label><br />
+      <input
+        type="number"
+        value={inputValue}
+        onChange={e => setInputValue(e.target.value)}
+      />
+
+      <br /><br />
+      <button onClick={calculate}>Vypočítat</button>
+
+      <br /><br />
+      {result && <div style={{ fontWeight: 'bold' }}>{result}</div>}
+    </div>
+  )
+}
+
+export default WeldingCalculator
