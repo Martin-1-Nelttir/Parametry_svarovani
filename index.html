@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Výpočet svařování</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <style>
+    body { padding: 2rem; }
+    .result { font-weight: bold; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h4>Výpočet parametrů svařování</h4>
+
+    <div class="input-field">
+      <select id="jointType">
+        <option value="koutový">Koutový</option>
+        <option value="tupý">Tupý</option>
+      </select>
+      <label>Typ spoje</label>
+    </div>
+
+    <div class="input-field">
+      <input id="thickness" type="number" value="5">
+      <label for="thickness">Tloušťka materiálu (mm)</label>
+    </div>
+
+    <div class="input-field">
+      <input id="wireDiameter" type="number" step="0.1" value="1.0">
+      <label for="wireDiameter">Průměr drátu (mm)</label>
+    </div>
+
+    <div class="input-field">
+      <select id="mode">
+        <option value="svarovani">Zadání rychlosti svařování (mm/min)</option>
+        <option value="podavani">Zadání rychlosti podávání drátu (m/min)</option>
+      </select>
+      <label>Režim výpočtu</label>
+    </div>
+
+    <div class="input-field">
+      <input id="inputValue" type="number" value="300">
+      <label id="inputLabel" for="inputValue">Rychlost svařování (mm/min)</label>
+    </div>
+
+    <button class="btn waves-effect waves-light" onclick="calculate()">Vypočítat</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var elems = document.querySelectorAll('select');
+      M.FormSelect.init(elems);
+
+      // Dynamická změna labelu
+      document.getElementById('mode').addEventListener('change', function () {
+        const label = document.getElementById('inputLabel');
+        label.textContent = this.value === 'svarovani'
+          ? 'Rychlost svařování (mm/min)'
+          : 'Rychlost podávání drátu (m/min)';
+      });
+    });
+
+    function calculate() {
+      const jointType = document.getElementById('jointType').value;
+      const thickness = parseFloat(document.getElementById('thickness').value);
+      const wireDiameter = parseFloat(document.getElementById('wireDiameter').value);
+      const mode = document.getElementById('mode').value;
+      const input = parseFloat(document.getElementById('inputValue').value);
+      const resultDiv = document.getElementById('result');
+
+      let A = 0;
+      if (jointType === 'koutový') {
+        A = (thickness * thickness) / 2;
+      } else {
+        A = thickness * thickness; // zjednodušeně
+      }
+
+      const wireArea = Math.PI * Math.pow(wireDiameter / 2, 2); // mm²
+
+      let result = '';
+      if (mode === 'svarovani') {
+        const Q = A * input; // mm³/min
+        const v_d = Q / wireArea / 1000; // m/min
+        result = `Rychlost podávání drátu: ${v_d.toFixed(2)} m/min`;
+      } else {
+        const Q = input * 1000 * wireArea; // mm³/min
+        const v_s = Q / A; // mm/min
+        result = `Rychlost svařování: ${v_s.toFixed(0)} mm/min`;
+      }
+
+      resultDiv.textContent = result;
+    }
+  </script>
+</body>
+</html>
