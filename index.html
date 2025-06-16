@@ -16,7 +16,7 @@
 
     <div class="input-field">
       <select id="jointType">
-        <option value="koutový">Koutový</option>
+        <option value="koutový" selected>Koutový</option>
         <option value="tupý">Tupý</option>
       </select>
       <label>Typ spoje</label>
@@ -25,6 +25,11 @@
     <div class="input-field">
       <input id="thickness" type="number" value="5">
       <label for="thickness">Tloušťka materiálu (mm)</label>
+    </div>
+
+    <div class="input-field">
+      <input id="weldSize" type="number" step="0.1" value="4">
+      <label for="weldSize">Velikost svaru a (mm)</label>
     </div>
 
     <div class="input-field">
@@ -56,7 +61,7 @@
       var elems = document.querySelectorAll('select');
       M.FormSelect.init(elems);
 
-      // Dynamická změna labelu
+      // Změna popisku podle režimu
       document.getElementById('mode').addEventListener('change', function () {
         const label = document.getElementById('inputLabel');
         label.textContent = this.value === 'svarovani'
@@ -68,16 +73,18 @@
     function calculate() {
       const jointType = document.getElementById('jointType').value;
       const thickness = parseFloat(document.getElementById('thickness').value);
+      const weldSize = parseFloat(document.getElementById('weldSize').value);
       const wireDiameter = parseFloat(document.getElementById('wireDiameter').value);
       const mode = document.getElementById('mode').value;
       const input = parseFloat(document.getElementById('inputValue').value);
       const resultDiv = document.getElementById('result');
 
+      // Výpočet průřezu svaru (mm²)
       let A = 0;
       if (jointType === 'koutový') {
-        A = (thickness * thickness) / 2;
+        A = (weldSize * weldSize) / 2;
       } else {
-        A = thickness * thickness; // zjednodušeně
+        A = weldSize * thickness; // zjednodušeně pro tupý svar
       }
 
       const wireArea = Math.PI * Math.pow(wireDiameter / 2, 2); // mm²
