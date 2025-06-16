@@ -1,93 +1,100 @@
-import React, { useState } from 'react'
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Výpočet svařování</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  <style>
+    body { padding: 2rem; }
+    .result { font-weight: bold; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h4>Výpočet parametrů svařování</h4>
 
-const WeldingCalculator = () => {
-  const [jointType, setJointType] = useState('koutový')
-  const [thickness, setThickness] = useState(5)
-  const [wireDiameter, setWireDiameter] = useState(1.0)
-  const [mode, setMode] = useState('svarovani') // nebo 'podavani'
-  const [inputValue, setInputValue] = useState(300)
-  const [result, setResult] = useState(null)
-
-  const calculate = () => {
-    const t = parseFloat(thickness)
-    const d = parseFloat(wireDiameter)
-    const v = parseFloat(inputValue)
-
-    // Výpočet plochy svarového kovu podle typu spoje
-    let A = 0
-    if (jointType === 'koutový') {
-      A = (t * t) / 2 // mm²
-    } else {
-      A = t * t // zjednodušený model
-    }
-
-    const wireArea = Math.PI * Math.pow(d / 2, 2) // mm²
-
-    let output = 0
-    if (mode === 'svarovani') {
-      // Vstup je rychlost svařování → výpočet rychlosti podávání
-      const Q = A * v // objem kovu v mm³/min
-      output = Q / wireArea / 1000 // m/min
-      setResult(`Rychlost podávání drátu: ${output.toFixed(2)} m/min`)
-    } else {
-      // Vstup je rychlost podávání drátu → výpočet rychlosti svařování
-      const Q = v * 1000 * wireArea // mm³/min
-      output = Q / A // mm/min
-      setResult(`Rychlost svařování: ${output.toFixed(0)} mm/min`)
-    }
-  }
-
-  return (
-    <div style={{ maxWidth: '500px' }}>
-      <label>Typ spoje:</label><br />
-      <select value={jointType} onChange={e => setJointType(e.target.value)}>
+    <div class="input-field">
+      <select id="jointType">
         <option value="koutový">Koutový</option>
         <option value="tupý">Tupý</option>
       </select>
+      <label>Typ spoje</label>
+    </div>
 
-      <br /><br />
+    <div class="input-field">
+      <input id="thickness" type="number" value="5">
+      <label for="thickness">Tloušťka materiálu (mm)</label>
+    </div>
 
-      <label>Tloušťka materiálu (mm):</label><br />
-      <input
-        type="number"
-        value={thickness}
-        onChange={e => setThickness(e.target.value)}
-      />
+    <div class="input-field">
+      <input id="wireDiameter" type="number" step="0.1" value="1.0">
+      <label for="wireDiameter">Průměr drátu (mm)</label>
+    </div>
 
-      <br /><br />
-
-      <label>Průměr drátu (mm):</label><br />
-      <input
-        type="number"
-        step="0.1"
-        value={wireDiameter}
-        onChange={e => setWireDiameter(e.target.value)}
-      />
-
-      <br /><br />
-
-      <label>Režim výpočtu:</label><br />
-      <select value={mode} onChange={e => setMode(e.target.value)}>
+    <div class="input-field">
+      <select id="mode">
         <option value="svarovani">Zadání rychlosti svařování (mm/min)</option>
         <option value="podavani">Zadání rychlosti podávání drátu (m/min)</option>
       </select>
-
-      <br /><br />
-
-      <label>{mode === 'svarovani' ? 'Rychlost svařování (mm/min):' : 'Rychlost podávání drátu (m/min):'}</label><br />
-      <input
-        type="number"
-        value={inputValue}
-        onChange={e => setInputValue(e.target.value)}
-      />
-
-      <br /><br />
-      <button onClick={calculate}>Vypočítat</button>
-
-      <br /><br />
-      {result && <div style={{ fontWeight: 'bold' }}>{result}</div>}
+      <label>Režim výpočtu</label>
     </div>
-  )
-}
 
-export default WeldingCalculator
+    <div class="input-field">
+      <input id="inputValue" type="number" value="300">
+      <label id="inputLabel" for="inputValue">Rychlost svařování (mm/min)</label>
+    </div>
+
+    <button class="btn waves-effect waves-light" onclick="calculate()">Vypočítat</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var elems = document.querySelectorAll('select');
+      M.FormSelect.init(elems);
+
+      // Dynamická změna labelu
+      document.getElementById('mode').addEventListener('change', function () {
+        const label = document.getElementById('inputLabel');
+        label.textContent = this.value === 'svarovani'
+          ? 'Rychlost svařování (mm/min)'
+          : 'Rychlost podávání drátu (m/min)';
+      });
+    });
+
+    function calculate() {
+      const jointType = document.getElementById('jointType').value;
+      const thickness = parseFloat(document.getElementById('thickness').value);
+      const wireDiameter = parseFloat(document.getElementById('wireDiameter').value);
+      const mode = document.getElementById('mode').value;
+      const input = parseFloat(document.getElementById('inputValue').value);
+      const resultDiv = document.getElementById('result');
+
+      let A = 0;
+      if (jointType === 'koutový') {
+        A = (thickness * thickness) / 2;
+      } else {
+        A = thickness * thickness; // zjednodušeně
+      }
+
+      const wireArea = Math.PI * Math.pow(wireDiameter / 2, 2); // mm²
+
+      let result = '';
+      if (mode === 'svarovani') {
+        const Q = A * input; // mm³/min
+        const v_d = Q / wireArea / 1000; // m/min
+        result = `Rychlost podávání drátu: ${v_d.toFixed(2)} m/min`;
+      } else {
+        const Q = input * 1000 * wireArea; // mm³/min
+        const v_s = Q / A; // mm/min
+        result = `Rychlost svařování: ${v_s.toFixed(0)} mm/min`;
+      }
+
+      resultDiv.textContent = result;
+    }
+  </script>
+</body>
+</html>
